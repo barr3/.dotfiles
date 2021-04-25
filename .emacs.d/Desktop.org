@@ -1,0 +1,385 @@
+#+title: Emacs Desktop Environment
+#+PROPERTY: header-args:emacs-lisp :tangle ./desktop.el
+* Setup
+** Desktop file
+#+begin_src shell :tangle ./exwm/exwm.desktop :mkdirp yes
+
+  [Desktop Entry]
+  Name=EXWM
+  Comment=Emacs Window Manager
+  Exec=sh /home/barre/.emacs.d/exwm/start-exwm.sh
+  TryExec=sh
+  Type=Application
+  X-LightDM-DesktopName=exwm
+  DesktopNames=exwm
+
+#+end_src
+** Launcher Script
+#+begin_src shell :tangle ./exwm/start-exwm.sh :shebang #!/bin/sh
+
+  #Run screen compositor
+  picom &
+
+  xss-lock -- slock & 
+
+  #Starts emacs fullscreen
+  exec dbus-launch --exit-with-session emacs -mm  --debug-init -l ~/.emacs.d/desktop.el
+
+#+end_src
+* EXWM
+#+begin_src emacs-lisp
+
+  (defun barremacs/run-in-background (command)
+    (let ((command-parts (split-string command "[ ]+")))
+      (apply #'call-process `(,(car command-parts) nil 0 nil ,@(cdr command-parts)))))
+
+  (defun barremacs/set-wallpaper ()
+    (interactive)
+    (start-process-shell-command
+     "feh" nil "feh --bg-scale Wallpapers/wallpapers/0133.jpg"))
+
+
+
+
+  (defun barremacs/exwm-init-hook ()
+    ;;Make workspace 1 be the one where you land at startup
+    (exwm-workspace-switch-create 1)
+
+    ;; (display-battery-mode 1)
+    ;; (setq display-time-day-and-date t)
+    ;; (display-time-mode 1)
+
+    (barremacs/start-panel)
+
+    (barremacs/run-in-background "nm-applet")
+    (barremacs/run-in-background "pasystray")
+    (barremacs/run-in-background "blueman-applet"))
+
+
+
+  (defun barremacs/exwm-update-class ()
+    (exwm-workspace-rename-buffer exwm-class-name))
+
+  (defun barremacs/exwm-update-title ()
+    (pcase exwm-class-name
+      ("firefox" (exwm-workspace-rename-buffer (format "Firefox: %s" exwm-title)))))
+
+  (defun barremacs/configure-window-by-class ()
+    (interactive)
+    (pcase exwm-class-name
+      ("firefox" (exwm-workspace-move-window 2))
+      ("discord" (exwm-workspace-move-window 3))
+      ("Spotify" (exwm-workspace-move-window 4))))
+                                          ;("Gnome-calculator" (exwm-floating-toggle-floating)
+                                          ;(exwm-layout-toggle-mode-line))
+
+  (defun barremacs/update-displays ()
+    (barremacs/run-in-background "autorandr --change --force")
+    (barremacs/set-wallpaper)
+    (message "Display config is %s"
+             (string-trim (shell-command-to-string "autorandr --current"))))
+
+
+  (use-package exwm
+    :config
+    ;; Set the default number of workspaces
+    (setq exwm-workspace-number 5)
+
+    ;; When window "class" updates, use it to set the buffer name
+    (add-hook 'exwm-update-class-hook #'barremacs/exwm-update-class)
+    (add-hook 'exwm-update-title-hook #'barremacs/exwm-update-title)
+
+    (add-hook 'exwm-manage-finish-hook #'barremacs/configure-window-by-class)
+
+    ;;Do extra configuration when starting EXWM
+    (add-hook 'exwm-init-hook #'barremacs/exwm-init-hook)
+
+    (setq exwm-workspace-show-all-buffers t)
+
+    ;;(setq exwm-workspace-minibuffer-position 'top)
+
+    ;;Set screen resolution
+    (require 'exwm-randr)
+    (exwm-randr-enable)
+    (start-process-shell-command "xrandr" nil "xrandr --output DP-1 --off --output HDMI-1 --mode 1920x1080 --pos 1680x0 --rotate normal --output DVI-D-1 --mode 1680x1050 --pos 0x0 --rotate normal")
+
+    (add-hook 'exwm-randr-screen-change-hook #'barremacs/update-displays)
+    (barremacs/update-displays)
+
+    ;;Set wallpaper after setting screen resolution
+    (barremacs/set-wallpaper)
+
+    (setq exwm-randr-workspace-monitor-plist
+          (pcase (system-name)
+            ("novigrad" '(2 "DVI-D-1" 3 "DVI-D-1" 5 "DVI-D-1"))))
+
+    (setq exwm-workspace-warp-cursor t)
+
+    (setq mouse-autoselect-window t
+          focus-follows-mouse t)
+
+    ;; (require 'exwm-systemtray)
+    ;; (exwm-systemtray-enable)
+
+    ;; These keys should always pass through to Emacs
+    (setq exwm-input-prefix-keys
+          '(?\C-x
+            ?\C-u
+            ?\C-h
+            ?\M-x
+            ?\M-`
+            ?\M-&
+            ?\M-:
+            ?\C-\M-j  ;; Buffer list
+            ?\C-\M-k  ;; Kill current buffer
+            ))  ;; Ctrl+Space
+
+    ;; Ctrl+Q will enable the next key to be sent directly
+    (define-key exwm-mode-map [?\C-q] 'exwm-input-send-next-key)
+
+    ;; Set up global key bindings.  These always work, no matter the input state!
+    ;; Keep in mind that changing this list after EXWM initializes has no effect.
+    (setq exwm-input-global-keys
+          `(
+            ;; Reset to line-mode (C-c C-k switches to char-mode via exwm-input-release-keyboard)
+            ([?\s-r] . exwm-reset)
+
+            ;; Move between windows
+            ([?\s-j] . windmove-left)
+            ([?\s-k] . windmove-right)
+            ([?\s-u] . windmove-up)
+            ([?\s-n] . windmove-down)
+
+            ;; ([?\C-c RET] . exwm-workspace-move)
+
+            ;; Launch applications via shell command
+            ([?\s-&] . (lambda (command)
+                         (interactive (list (read-shell-command "$ ")))
+                         (start-process-shell-command command nil command)))
+
+            ;; Switch workspace
+            ([?\s-w] . exwm-workspace-switch)
+
+            ([?\s-§] . (lambda () (interactive)
+                         (exwm-workspace-switch-create 0)))
+
+            ;; 's-N': Switch to certain workspace with Super (Win) plus a number key (0 - 9)
+            ,@(mapcar (lambda (i)
+                        `(,(kbd (format "s-%d" i)) .
+                          (lambda ()
+                            (interactive)
+                            (exwm-workspace-switch-create ,i))))
+                      (number-sequence 0 9))))
+
+    (exwm-input-set-key (kbd "s-SPC") 'counsel-linux-app)
+    (exwm-input-set-key (kbd "C-c RET") 'exwm-workspace-move)
+
+    (exwm-enable))
+
+#+end_src
+
+
+** Desktop Environment
+
+#+begin_src emacs-lisp
+
+  (use-package desktop-environment
+    :after exwm
+    :config (desktop-environment-mode)
+    :custom
+    (desktop-environment-brightness-small-increment "2%+")
+    (desktop-environment-brightness-small-decrement "2%-")
+    (desktop-environment-brightness-normal-increment "5%+")
+    (desktop-environment-brightness-normal-decrement "5%-"))
+
+#+end_src
+
+** Polybar config
+#+begin_src conf :tangle ~/.config/polybar/config :mkdirp yes
+
+  [settings]
+  screenchange-reload = true
+
+  [global/wm]
+  margin-top = 0
+  margin-bottom = 0
+
+  [colors]
+  background = #282c34
+  background-alt = #21242b
+  foreground = #bbc2cf
+  foreground-alt = #5b6268
+  primary = #ffb52a
+  secondary = #e60053
+  alert = #bd2c40
+  underline-1 = #51afef
+
+  [bar/panel]
+  width = 100%
+  height = 18
+  offset-x = 0
+  offset-y = 0
+  fixed-center = true
+  enable-ipc = true
+
+  background = ${colors.background}
+  foreground = ${colors.foreground}
+
+  line-size = 2
+  line-color = #f00
+
+  border-size = 0
+  border-color = #00000000
+
+  padding-top = 5
+  padding-left = 1
+  padding-right = 1
+
+  module-margin = 1
+
+  font-0 = "Cantarell:size=12:weight=bold;2"
+  font-1 = "Font Awesome:size=8;2"
+  font-2 = "Material Icons:size=14;5"
+  font-3 = "Fira Mono:size=8;-3"
+
+  modules-left = exwm-workspace
+  modules-right = battery cpu temperature date
+
+  tray-position = right
+  tray-padding = 2
+  tray-maxsize = 28
+
+  cursor-click = pointer
+  cursor-scroll = ns-resize
+
+
+                [module/exwm-workspace]
+  type = custom/ipc
+  hook-0 = emacsclient -e "(barremacs/polybar-exwm-workspace)" | sed -e 's/^"//' -e 's/"$//'
+  initial = 1
+  format-underline = ${colors.underline-1}
+  format-padding = 1
+
+  [module/cpu]
+  type = internal/cpu
+  interval = 2
+  format = <label> <ramp-coreload>
+  format-underline = ${colors.underline-1}
+  click-left = emacsclient -e "(proced)"
+  label = %percentage:2%%
+  ramp-coreload-spacing = 0
+  ramp-coreload-0 = ▁
+  ramp-coreload-0-foreground = ${colors.foreground-alt}
+  ramp-coreload-1 = ▂
+  ramp-coreload-2 = ▃
+  ramp-coreload-3 = ▄
+  ramp-coreload-4 = ▅
+  ramp-coreload-5 = ▆
+  ramp-coreload-6 = ▇
+
+  [module/date]
+  type = internal/date
+  interval = 5
+
+  date = "%a %b %e"
+  date-alt = "%A %B %d %Y"
+
+  time = %l:%M %p
+  time-alt = %H:%M:%S
+
+  format-prefix-foreground = ${colors.foreground-alt}
+  format-underline = ${colors.underline-1}
+
+  label = %date% %time%
+
+  [module/battery]
+  type = internal/battery
+  battery = BAT0
+  adapter = ADP1
+  full-at = 98
+  time-format = %-l:%M
+
+  label-charging = %percentage%% / %time%
+  format-charging = <animation-charging> <label-charging>
+  format-charging-underline = ${colors.underline-1}
+
+  label-discharging = %percentage%% / %time%
+  format-discharging = <ramp-capacity> <label-discharging>
+  format-discharging-underline = ${self.format-charging-underline}
+
+  format-full = <ramp-capacity> <label-full>
+  format-full-underline = ${self.format-charging-underline}
+
+  ramp-capacity-0 = 
+  ramp-capacity-1 = 
+  ramp-capacity-2 = 
+  ramp-capacity-3 = 
+  ramp-capacity-4 = 
+
+  animation-charging-0 = 
+  animation-charging-1 = 
+  animation-charging-2 = 
+  animation-charging-3 = 
+  animation-charging-4 = 
+  animation-charging-framerate = 750
+
+  [module/temperature]
+  type = internal/temperature
+  thermal-zone = 0
+  warn-temperature = 60
+
+  format = <label>
+  format-underline = ${colors.underline-1}
+  format-warn = <label-warn>
+  format-warn-underline = ${self.format-underline}
+
+  label = %temperature-c%
+  label-warn = %temperature-c%!
+  label-warn-foreground = ${colors.secondary}
+
+#+end_src
+
+
+** Polybar
+
+#+begin_src emacs-lisp
+
+          (server-start)
+
+          (defvar barremacs/polybar-process nil
+            "Holds the process of the running Polybar instance, if any")
+
+        (defun barremacs/polybar-exwm-workspace ()
+        (pcase exwm-workspace-current-index
+          (0 "dev")
+          (1 "sys")
+          (2 "www")
+          (3 "chat")
+          (4 "entertainment")
+          (5 "school")
+          (6 "misc" )
+          (7 "misc")
+          (8 "misc")
+          (9 "misc")))
+
+          (defun barremacs/kill-panel ()
+            (interactive)
+            (when barremacs/polybar-process
+              (ignore-errors
+                (kill-process barremacs/polybar-process)))
+            (setq barremacs/polybar-process nil))
+
+          (defun barremacs/start-panel ()
+            (interactive)
+            (barremacs/kill-panel)
+            (setq barremacs/polybar-process (start-process-shell-command "polybar" nil "polybar panel")))
+
+      (defun barremacs/send-polybar-hook (module-name hook-index)
+      (start-process-shell-command "polybar-msg" nil (format "polybar-msg hook %s %s" module-name hook-index)))
+
+    (defun barremacs/send-polybar-exwm-workspace ()
+      (barremacs/send-polybar-hook "exwm-workspace" 1))
+
+  (add-hook 'exwm-workspace-switch-hook #'barremacs/send-polybar-exwm-workspace)
+
+#+end_src

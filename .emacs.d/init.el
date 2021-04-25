@@ -6,15 +6,15 @@
 
 (package-initialize)
 (unless package-archive-contents
-(package-refresh-contents))
+  (package-refresh-contents))
 
- ;; Initialize use-package on non-Linux platforms
- (unless (package-installed-p 'use-package)
- (package-install 'use-package))
+;; Initialize use-package on non-Linux platforms
+(unless (package-installed-p 'use-package)
+  (package-install 'use-package))
 
 
- (require 'use-package)
- (setq use-package-always-ensure t)
+(require 'use-package)
+(setq use-package-always-ensure t)
 
 (defvar barremacs/default-font-size 132)
 (defvar barremacs/var-pitch-font-size 160)
@@ -36,8 +36,8 @@
 
 (setq truncate-lines 1)
 
-(set-frame-parameter (selected-frame) 'alpha '(95 95))
-(add-to-list 'default-frame-alist '(alpha 95 95))
+(set-frame-parameter (selected-frame) 'alpha '(94 . 94))
+(add-to-list 'default-frame-alist '(alpha . (94 . 94)))
 
 (defun barremacs/set-font-faces ()
   (message "Setting faces")
@@ -53,27 +53,27 @@
                 (setq doom-modeline-icon t)
                 (with-selected-frame frame
                   (barremacs/set-font-faces))))
-    (barremacs/set-font-faces))
+  (barremacs/set-font-faces))
 
 ; (use-package simple-httpd)
 
-; (add-to-list 'load-path "/home/barre/BSE/")
-; (require 'spotify)
+                                        ; (add-to-list 'load-path "/home/barre/BSE/")
+                                        ; (require 'spotify)
 
 ;; Settings
-; (setq spotify-oauth2-client-secret "230474a9a95446dd99bf6a6570e2aa8f")
-; (setq spotify-oauth2-client-id "734b1bd830d74e5e9f761cc8b5e849d1")
-; (define-key spotify-mode-map (kbd "C-c .") 'spotify-command-map)
-; (setq spotify-transport 'connect)
+                                        ; (setq spotify-oauth2-client-secret "230474a9a95446dd99bf6a6570e2aa8f")
+                                        ; (setq spotify-oauth2-client-id "734b1bd830d74e5e9f761cc8b5e849d1")
+                                        ; (define-key spotify-mode-map (kbd "C-c .") 'spotify-command-map)
+                                        ; (setq spotify-transport 'connect)
 
-(use-package counsel-spotify)
+;;  (use-package counsel-spotify)
 (setq counsel-spotify-client-id "734b1bd830d74e5e9f761cc8b5e849d1")
 (setq counsel-spotify-client-secret "230474a9a95446dd99bf6a6570e2aa8f")
 
 (use-package general
   :config
   (general-create-definer barremacs/leader-keys
-    ;:keymaps '(normal insert visual emacs)
+                                        ;:keymaps '(normal insert visual emacs)
     :prefix "C-c"
     :global-prefix "C-c")
 
@@ -93,17 +93,17 @@
     "cr" '(lsp-treemacs-references :which-key "references")
     "t"  '(:ignore t :which-key "toggles")
     "tt" '(counsel-load-theme :which-key "choose theme")
-     "s"  '(:ignore s :which-key "spotify")
-     "sn" '(counsel-spotify-next :which-key "next")
-     "sp" '(counsel-spotify-previous :which-key "previous")      
-     "ss" '(counsel-spotify-search-track :which-key "search track")
-     "sa" '(counsel-spotify-search-album :which-key "search album")
-     "st" '(counsel-spotify-toggle-play-pause :which-key "play/pause")))
+    "s"  '(:ignore s :which-key "spotify")
+    "sn" '(counsel-spotify-next :which-key "next")
+    "sp" '(counsel-spotify-previous :which-key "previous")      
+    "ss" '(counsel-spotify-search-track :which-key "search track")
+    "sa" '(counsel-spotify-search-album :which-key "search album")
+    "st" '(counsel-spotify-toggle-play-pause :which-key "play/pause")))
 
 (use-package command-log-mode)
 
 (use-package doom-themes
-    :init (load-theme 'doom-one t))
+  :init (load-theme 'doom-one t))
 ;;doom-gruvbox
 
 (use-package all-the-icons)
@@ -168,7 +168,9 @@
          ("C-x b" . counsel-ibuffer)
          ("C-x C-f" . counsel-find-file)
          :map minibuffer-local-map
-         ("C-r" . 'counsel-minibuffer-history)))
+         ("C-r" . 'counsel-minibuffer-history))
+  :custom
+  (counsel-linux-app-format-function #'counsel-linux-app-format-function-name-only))
 
 (use-package helpful
   :custom
@@ -189,172 +191,172 @@
   ("f" nil "finished" :exit t))
 
 (barremacs/leader-keys
-    "ts" '(hydra-text-scale/body :which-key "scale text"))
+  "ts" '(hydra-text-scale/body :which-key "scale text"))
 
 (defun barremacs/org-font-setup ()
   ;; Replaces list hyphen with a dot
   (font-lock-add-keywords 'org-mode
-		      '(("^ *\\([-]\\)"
-			 (0 (prog1 () (compose-region (match-beginning 1) (match-end 1) "•"))))))
+                          '(("^ *\\([-]\\)"
+                             (0 (prog1 () (compose-region (match-beginning 1) (match-end 1) "•"))))))
 
   ;;Set faces for heading levels
   (dolist (face '((org-level-1 . 1.2)
                   (org-level-2 . 1.1)
-		  (org-level-3 . 1.05)
-		  (org-level-4 . 1.0)
-		  (org-level-5 . 1.1)
-		  (org-level-6 . 1.1)
-		  (org-level-7 . 1.1)
-		  (org-level-8 . 1.1)))
-      (set-face-attribute (car face) nil :font "Cantarell" :weight 'regular :height (cdr face)))
+                  (org-level-3 . 1.05)
+                  (org-level-4 . 1.0)
+                  (org-level-5 . 1.1)
+                  (org-level-6 . 1.1)
+                  (org-level-7 . 1.1)
+                  (org-level-8 . 1.1)))
+    (set-face-attribute (car face) nil :font "Cantarell" :weight 'regular :height (cdr face)))
 
 
- ;;Ensure that anything that should be fixed pitch in org files appears that way
- (set-face-attribute 'org-block nil :foreground nil :inherit 'fixed-pitch)
- (set-face-attribute 'org-code nil :inherit '(shadow fixed-pitch))
- (set-face-attribute 'org-table nil :inherit '(shadow fixed-pitch))
+  ;;Ensure that anything that should be fixed pitch in org files appears that way
+  (set-face-attribute 'org-block nil :foreground nil :inherit 'fixed-pitch)
+  (set-face-attribute 'org-code nil :inherit '(shadow fixed-pitch))
+  (set-face-attribute 'org-table nil :inherit '(shadow fixed-pitch))
 
- (set-face-attribute 'org-verbatim nil :inherit '(shadow fixed-pitch))
- (set-face-attribute 'org-special-keyword nil :inherit '(font-lock-comment-face fixed-pitch))
- (set-face-attribute 'org-meta-line nil :inherit '(font-lock-comment-face fixed-pitch))
- (set-face-attribute 'org-checkbox nil :inherit 'fixed-pitch))
+  (set-face-attribute 'org-verbatim nil :inherit '(shadow fixed-pitch))
+  (set-face-attribute 'org-special-keyword nil :inherit '(font-lock-comment-face fixed-pitch))
+  (set-face-attribute 'org-meta-line nil :inherit '(font-lock-comment-face fixed-pitch))
+  (set-face-attribute 'org-checkbox nil :inherit 'fixed-pitch))
 
 (defun barremacs/org-mode-setup () 
   (org-indent-mode)
   (variable-pitch-mode 1)
   (visual-line-mode 1))
-   
+
 
 
 (use-package org
   :hook (org-mode . barremacs/org-mode-setup)  
   :config
   (setq org-ellipsis " ▾"
-	org-hide-emphasis-markers t)
+        org-hide-emphasis-markers t)
 
   (setq org-agenda-start-with-log-mode t)
   (setq org-log-done 'time)
   (setq org-log-into-drawer t)
 
   (setq org-agenda-files
-	'("~/Documents/OrgFiles/Tasks.org"))
+        '("~/Documents/OrgFiles/Tasks.org"))
 
   (require 'org-habit)
   (add-to-list 'org-modules 'org-habit)
   (setq org-habit-graph-column 60)
-  
-  
-  (setq org-tag-alist
-    '((:startgroup)
-       ; Put mutually exclusive tags here
-       (:endgroup)
-       ("@errand" . ?E)
-       ("@home" . ?H)
-       ("@work" . ?W)
-       ("agenda" . ?a)
-       ("planning" . ?p)
-       ("publish" . ?P)
-       ("batch" . ?b)
-       ("note" . ?n)
-       ("idea" . ?i)))
 
-  
+
+  (setq org-tag-alist
+        '((:startgroup)
+                                        ; Put mutually exclusive tags here
+          (:endgroup)
+          ("@errand" . ?E)
+          ("@home" . ?H)
+          ("@work" . ?W)
+          ("agenda" . ?a)
+          ("planning" . ?p)
+          ("publish" . ?P)
+          ("batch" . ?b)
+          ("note" . ?n)
+          ("idea" . ?i)))
+
+
   (setq org-todo-keywords
-	'((sequence "TODO(t)" "NEXT(n)" "|" "DONE(d)")
-	  (sequence "BACKLOG(b)" "PLAN(p)" "READY(r)" "ACTIVE(a)" "REVIEW(v)" "WAIT(w@/!)" "HOLD(h)" "|" "COMPLETED(c)" "CANC(k@)")))
+        '((sequence "TODO(t)" "NEXT(n)" "|" "DONE(d)")
+          (sequence "BACKLOG(b)" "PLAN(p)" "READY(r)" "ACTIVE(a)" "REVIEW(v)" "WAIT(w@/!)" "HOLD(h)" "|" "COMPLETED(c)" "CANC(k@)")))
 
   (setq org-refile-targets
-	'(("Archive.org" :maxlevel . 1)
-	  ("Tasks.org" :maxlevel . 1)))
+        '(("Archive.org" :maxlevel . 1)
+          ("Tasks.org" :maxlevel . 1)))
 
   (advice-add 'org-refile :after 'org-save-all-org-buffers)
 
-  
+
   (setq org-agenda-custom-commands
-   '(("d" "Dashboard"
-     ((agenda "" ((org-deadline-warning-days 7)))
-      (todo "NEXT"
-        ((org-agenda-overriding-header "Next Tasks")))
-      (tags-todo "agenda/ACTIVE" ((org-agenda-overriding-header "Active Projects")))))
+        '(("d" "Dashboard"
+           ((agenda "" ((org-deadline-warning-days 7)))
+            (todo "NEXT"
+                  ((org-agenda-overriding-header "Next Tasks")))
+            (tags-todo "agenda/ACTIVE" ((org-agenda-overriding-header "Active Projects")))))
 
-    ("n" "Next Tasks"
-     ((todo "NEXT"
-        ((org-agenda-overriding-header "Next Tasks")))))
+          ("n" "Next Tasks"
+           ((todo "NEXT"
+                  ((org-agenda-overriding-header "Next Tasks")))))
 
-    ("W" "Work Tasks" tags-todo "+work-email")
+          ("W" "Work Tasks" tags-todo "+work-email")
 
-    ;; Low-effort next actions
-    ("e" tags-todo "+TODO=\"NEXT\"+Effort<15&+Effort>0"
-     ((org-agenda-overriding-header "Low Effort Tasks")
-      (org-agenda-max-todos 20)
-      (org-agenda-files org-agenda-files)))
+          ;; Low-effort next actions
+          ("e" tags-todo "+TODO=\"NEXT\"+Effort<15&+Effort>0"
+           ((org-agenda-overriding-header "Low Effort Tasks")
+            (org-agenda-max-todos 20)
+            (org-agenda-files org-agenda-files)))
 
-    ("w" "Workflow Status"
-     ((todo "WAIT"
-            ((org-agenda-overriding-header "Waiting on External")
-             (org-agenda-files org-agenda-files)))
-      (todo "REVIEW"
-            ((org-agenda-overriding-header "In Review")
-             (org-agenda-files org-agenda-files)))
-      (todo "PLAN"
-            ((org-agenda-overriding-header "In Planning")
-             (org-agenda-todo-list-sublevels nil)
-             (org-agenda-files org-agenda-files)))
-      (todo "BACKLOG"
-            ((org-agenda-overriding-header "Project Backlog")
-             (org-agenda-todo-list-sublevels nil)
-             (org-agenda-files org-agenda-files)))
-      (todo "READY"
-            ((org-agenda-overriding-header "Ready for Work")
-             (org-agenda-files org-agenda-files)))
-      (todo "ACTIVE"
-            ((org-agenda-overriding-header "Active Projects")
-             (org-agenda-files org-agenda-files)))
-      (todo "COMPLETED"
-            ((org-agenda-overriding-header "Completed Projects")
-             (org-agenda-files org-agenda-files)))
-      (todo "CANC"
-            ((org-agenda-overriding-header "Cancelled Projects")
-             (org-agenda-files org-agenda-files)))))))
+          ("w" "Workflow Status"
+           ((todo "WAIT"
+                  ((org-agenda-overriding-header "Waiting on External")
+                   (org-agenda-files org-agenda-files)))
+            (todo "REVIEW"
+                  ((org-agenda-overriding-header "In Review")
+                   (org-agenda-files org-agenda-files)))
+            (todo "PLAN"
+                  ((org-agenda-overriding-header "In Planning")
+                   (org-agenda-todo-list-sublevels nil)
+                   (org-agenda-files org-agenda-files)))
+            (todo "BACKLOG"
+                  ((org-agenda-overriding-header "Project Backlog")
+                   (org-agenda-todo-list-sublevels nil)
+                   (org-agenda-files org-agenda-files)))
+            (todo "READY"
+                  ((org-agenda-overriding-header "Ready for Work")
+                   (org-agenda-files org-agenda-files)))
+            (todo "ACTIVE"
+                  ((org-agenda-overriding-header "Active Projects")
+                   (org-agenda-files org-agenda-files)))
+            (todo "COMPLETED"
+                  ((org-agenda-overriding-header "Completed Projects")
+                   (org-agenda-files org-agenda-files)))
+            (todo "CANC"
+                  ((org-agenda-overriding-header "Cancelled Projects")
+                   (org-agenda-files org-agenda-files)))))))
 
 
   (setq org-capture-templates
-    `(("t" "Tasks / Projects")
-      ("tt" "Task" entry (file+olp "~/Documents/OrgFiles/Tasks.org" "Inbox")
+        `(("t" "Tasks / Projects")
+          ("tt" "Task" entry (file+olp "~/Documents/OrgFiles/Tasks.org" "Inbox")
            "* TODO %?\n  %U\n  %a\n  %i" :empty-lines 1)
 
-      ("j" "Journal Entries")
-      ("jj" "Journal" entry
+          ("j" "Journal Entries")
+          ("jj" "Journal" entry
            (file+olp+datetree "~/Documents/OrgFiles/Journal.org")
            "\n* %<%I:%M %p> - Journal :journal:\n\n%?\n\n"
            ;; ,(dw/read-file-as-string "~/Notes/Templates/Daily.org")
            :clock-in :clock-resume
            :empty-lines 1)
-      ("jm" "Meeting" entry
+          ("jm" "Meeting" entry
            (file+olp+datetree "~/Documents/OrgFiles/Journal.org")
            "* %<%I:%M %p> - %a :meetings:\n\n%?\n\n"
            :clock-in :clock-resume
            :empty-lines 1)
 
-      ("w" "Workflows")
-      ("we" "Checking Email" entry (file+olp+datetree "~/Documents/OrgFiles/Journal.org")
+          ("w" "Workflows")
+          ("we" "Checking Email" entry (file+olp+datetree "~/Documents/OrgFiles/Journal.org")
            "* Checking Email :email:\n\n%?" :clock-in :clock-resume :empty-lines 1)
 
-      ("m" "Metrics Capture")
-      ("mw" "Weight" table-line (file+headline "~/Documents/OrgFiles/Metrics.org" "Weight")
-       "| %U | %^{Weight} | %^{Notes} |" :kill-buffer t)))
+          ("m" "Metrics Capture")
+          ("mw" "Weight" table-line (file+headline "~/Documents/OrgFiles/Metrics.org" "Weight")
+           "| %U | %^{Weight} | %^{Notes} |" :kill-buffer t)))
 
-      (barremacs/org-font-setup))
+  (barremacs/org-font-setup))
 
 (use-package org-bullets
-    :after org
-    :hook (org-mode . org-bullets-mode)
-    :custom
-    (org-bullets-bullet-list '("◉" "○" "●" "○" "●" "○" "●")))
+  :after org
+  :hook (org-mode . org-bullets-mode)
+  :custom
+  (org-bullets-bullet-list '("◉" "○" "●" "○" "●" "○" "●")))
 
 (defun barremacs/org-mode-visual-fill ()
   (setq visual-fill-column-width 100
-	visual-fill-column-center-text t)
+        visual-fill-column-center-text t)
   (visual-fill-column-mode 1 ))
 
 (use-package visual-fill-column
@@ -362,9 +364,9 @@
   :hook (org-mode . barremacs/org-mode-visual-fill))
 
 (org-babel-do-load-languages
-  'org-babel-load-languages
-  '((emacs-lisp . t)
-    (python . t)))
+ 'org-babel-load-languages
+ '((emacs-lisp . t)
+   (python . t)))
 
 (push '("conf-unix" . conf-unix) org-src-lang-modes)
 
@@ -377,11 +379,11 @@
 ;;Automatically tangle Emacs.org config file when saved
 
 (defun barremacs/org-babel-tangle-config ()
-  (when (string-equal (buffer-file-name)
-                      (expand-file-name "~/.emacs.d/Emacs.org"))
+  (when (string-equal (file-name-directory (buffer-file-name))
+                      (expand-file-name "~/.emacs.d/"))
 
-     (let ((org-confirm-babel-evaluate nil))
-       (org-babel-tangle))))
+    (let ((org-confirm-babel-evaluate nil))
+      (org-babel-tangle))))
 
 
 (add-hook 'org-mode-hook (lambda () (add-hook 'after-save-hook #'barremacs/org-babel-tangle-config)))
@@ -391,11 +393,13 @@
   :config
   (dashboard-setup-startup-hook))
 
+(setq initial-buffer-choice (lambda () (get-buffer-create "*dashboard*")))
+
 (setq dashboard-banner-logo-title "Welcome back to emacs, master.")
 (setq dashboard-startup-banner 'logo)
 (setq dashboard-items '((recents . 5)
-                          (projects . 5)
-                          (agenda . 5)))
+                        (projects . 5)
+                        (agenda . 5)))
 (setq dashboard-set-heading-icons t)
 (setq dashboard-set-file-icons t)
 
@@ -413,8 +417,8 @@
   (setq lsp-keymap-prefix "C-c l")
   :config
   (lsp-enable-which-key-integration t)
-;;   (lsp-enable-snippet t)
-)
+  ;;   (lsp-enable-snippet t)
+  )
 
 (use-package lsp-ui
   :hook (lsp-mode . lsp-ui-mode)
@@ -423,6 +427,8 @@
 
 (use-package lsp-treemacs
   :after lsp)
+
+(use-package dap-mode)
 
 (use-package csharp-mode
   :mode "\\.cs\\'"
@@ -436,7 +442,7 @@
   :mode "\\.html\\'"
   :hook (web-mode . lsp-deferred))
 
-;(add-hook 'html-mode 'lsp-deferred)
+                                        ;(add-hook 'html-mode 'lsp-deferred)
 
 (use-package css-mode
   :mode "\\.css\\'"
@@ -446,20 +452,28 @@
   :ensure t
   :init (setq lsp-python-ms-auto-install-server t)
   :hook (python-mode . (lambda ()
-                          (require 'lsp-python-ms)
-                          (lsp))))  ; or lsp-deferred
+                         (require 'lsp-python-ms)
+                         (lsp))))  ; or lsp-deferred
 
 ;; (use-package c++-mode
-  ;;   :mode "\\.cpp\\'"
-  ;;   :hook (c++-mode . lsp-deferred))
+;;   :mode "\\.cpp\\'"
+;;   :hook (c++-mode . lsp-deferred))
 
 (add-hook 'c++-mode 'lsp-deferred)
 
 ;; (use-package emacs-lisp-mode
-  ;;   :mode "\\.el\\'"
-  ;;   :hook (emacs-lisp-mode . lsp-deferred))
+;;   :mode "\\.el\\'"
+;;   :hook (emacs-lisp-mode . lsp-deferred))
 
 ;; (add-hook 'c++-mo 'lsp-deferred)
+
+(use-package typescript-mode
+  :mode "\\.ts\\'"
+  :hook (typescript-mode . lsp-deferred)
+  :config
+  (setq typescript-indent-level 2)
+  (require 'dap-node)
+  (dap-node-setup))
 
 (use-package projectile
   :diminish projectile-mode
@@ -477,18 +491,18 @@
   :config (counsel-projectile-mode))
 
 (defun barremacs/expand-with-company ()
-   (interactive)
-   (call-interactively 'company-complete-selection)
-   (call-interactively 'yas-expand))
+  (interactive)
+  (call-interactively 'company-complete-selection)
+  (call-interactively 'yas-expand))
 
 (use-package company
   :after lsp-mode
   :hook (lsp-mode . company-mode)
-        (lsp-mode . yas-minor-mode)
+  (lsp-mode . yas-minor-mode)
   :bind (:map company-active-map
-         ("<tab>" .  barremacs/expand-with-company))
-        (:map lsp-mode-map
-         ("<tab>" . company-indent-or-complete-common))
+              ("<tab>" .  barremacs/expand-with-company))
+  (:map lsp-mode-map
+        ("<tab>" . company-indent-or-complete-common))
   :custom
   (company-minimum-prefix-length 1)
   (company-idle-delay 0.0))
@@ -500,7 +514,7 @@
   :custom
   (magit-display-buffer-function #'magit-display-buffer-same-window-except-diff-v1))
 
-  
+
 ;; NOTE: Make sure to configure a GitHub token before using this package!
 ;; - https://magit.vc/manual/forge/Token-Creation.html#Token-Creation
 ;; - https://magit.vc/manual/ghub/Getting-Started.html#Getting-Started
@@ -510,8 +524,8 @@
   :hook (prog-mode . rainbow-delimiters-mode))
 
 (use-package gdscript-mode
-:mode "\\.gd\\'"
-:hook (gdscript-mode . lsp-deferred))
+  :mode "\\.gd\\'"
+  :hook (gdscript-mode . lsp-deferred))
 
 (use-package term
   :config
@@ -538,6 +552,75 @@
   :hook (dired-mode . dired-hide-dotfiles-mode)
   :config 
   (define-key dired-mode-map (kbd "H") 'dired-hide-dotfiles-mode))
+
+(defun barremacs/exwm-update-class ()
+  (exwm-workspace-rename-buffer exwm-class-name))
+
+(use-package exwm
+  :config
+  ;; Set the default number of workspaces
+  (setq exwm-workspace-number 5)
+
+  ;; When window "class" updates, use it to set the buffer name
+  (add-hook 'exwm-update-class-hook #'barremacs/exwm-update-class)
+
+  ;;Set screen resolution
+  (require 'exwm-randr)
+  (exwm-randr-enable)
+  (start-process-shell-command "xrandr" nil "xrandr --output DP-1 --off --output HDMI-1 --mode 1920x1080 --pos 0x0 --rotate normal --output DVI-D-1 --off")
+
+  (require 'exwm-systemtray)
+  (exwm-systemtray-enable)
+
+  ;; These keys should always pass through to Emacs
+  (setq exwm-input-prefix-keys
+        '(?\C-x
+          ?\C-u
+          ?\C-h
+          ?\M-x
+          ?\M-`
+          ?\M-&
+          ?\M-:
+          ?\C-\M-j  ;; Buffer list
+          ?\C-\M-k  ;; Kill current buffer
+          ))  ;; Ctrl+Space
+
+  ;; Ctrl+Q will enable the next key to be sent directly
+  (define-key exwm-mode-map [?\C-q] 'exwm-input-send-next-key)
+
+  ;; Set up global key bindings.  These always work, no matter the input state!
+  ;; Keep in mind that changing this list after EXWM initializes has no effect.
+  (setq exwm-input-global-keys
+        `(
+          ;; Reset to line-mode (C-c C-k switches to char-mode via exwm-input-release-keyboard)
+          ([?\s-r] . exwm-reset)
+
+          ;; Move between windows
+          ([?\s-j] . windmove-left)
+          ([?\s-k] . windmove-right)
+          ([?\s-h] . windmove-up)
+          ([?\s-n] . windmove-down)
+
+          ;; Launch applications via shell command
+          ([?\s-&] . (lambda (command)
+                       (interactive (list (read-shell-command "$ ")))
+                       (start-process-shell-command command nil command)))
+
+          ;; Switch workspace
+          ([?\s-w] . exwm-workspace-switch)
+
+          ([?\s-§] . (lambda () (interactive)
+                       (exwm-workspace-switch-create 0)))
+
+          ;; 's-N': Switch to certain workspace with Super (Win) plus a number key (0 - 9)
+          ,@(mapcar (lambda (i)
+                      `(,(kbd (format "s-%d" i)) .
+                        (lambda ()
+                          (interactive)
+                          (exwm-workspace-switch-create ,i))))
+                    (number-sequence 0 9))))
+
+  (exwm-enable))
 
 ;; Make ESC quit prompts
 
