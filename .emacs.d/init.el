@@ -17,6 +17,7 @@
 (setq use-package-always-ensure t)
 
 (defvar barremacs/default-font-size 132)
+(defvar barremacs/smaller-font-size 110)
 (defvar barremacs/var-pitch-font-size 160)
 
 (setq inhibit-startup-message t)
@@ -34,19 +35,82 @@
 (column-number-mode)
 (global-display-line-numbers-mode t)
 
-(setq truncate-lines 1)
+(dolist (mode '(org-mode-hook
+                term-mode-hook
+                shell-mode-hook
+                treemacs-mode-hook
+                eshell-mode-hook))
+  (add-hook mode (lambda () (display-line-numbers-mode 0))))
 
-(set-frame-parameter (selected-frame) 'alpha '(94 . 94))
-(add-to-list 'default-frame-alist '(alpha . (94 . 94)))
+;; (use-package doom-themes)
+;; (load-theme 'doom-one t)
+;; (setq doom-themes-treemacs-theme "doom-colors")
+;; (doom-themes-treemacs-config)
+
+;; (use-package doom-modeline
+;;   :ensure t
+;;   :init (doom-modeline-mode 1))
+
+
+;; (setq doom-modeline-height 10)
+;; (setq doom-modeline-project-detection 'project)
+;; (setq doom-modeline-major-mode-icon t)
+;; (setq doom-modeline-major-mode-color-icon t)
+;; (setq doom-modeline-buffer-state-icon nil)
+;; (setq doom-modeline-buffer-modification-icon nil)
+;; (setq doom-modeline-minor-modes nil)
+;; (setq doom-modeline-enable-word-count t)
+;; (setq doom-modeline-continuous-word-count-modes '(markdown-mode gfm-mode org-mode))
+;; (setq doom-modeline-buffer-encoding t)
+;; (setq doom-modeline-lsp t)
+
+;; (setq doom-modeline-height 10)
+;; (set-face-attribute 'mode-line nil :family "Fira Code" :height barremacs/smaller-font-size)
+;; (set-face-attribute 'mode-line-inactive nil :family "Fira Code" :height barremacs/smaller-font-size)
+
+(load-theme 'doom-one t)
+
+
+(setq-default mode-line-format
+      (list
+     " "
+     '(:eval mode-name)
+
+       '(:eval (when-let (vc vc-mode)
+                 (list " "
+                       (propertize (substring vc 5)
+                                   'face 'font-lock-comment-face)
+                       " ")))
+
+
+
+
+
+       '(:eval
+         (list
+          (propertize " %b " 'help-echo (buffer-file-name))
+          (when (buffer-modified-p)
+            (propertize (all-the-icons-faicon "file"
+                                              :face 'all-the-icons-icon-for-mode
+                                              :height 0.7
+                                              :v-adjust 0.01
+                                              )))
+          (when buffer-read-only
+            (propertize (all-the-icons-faicon "lock"
+                                              :face 'all-the-icons-icon-for-mode
+                                              :height 0.7
+                                            :v-adjust 0.001
+                                              )))))
+     "  line %l"
+     "               Overhead the albatross hangs motionless up on the air...                   "
+
+       ))
 
 (defun barremacs/set-font-faces ()
-  (message "Setting faces")
-  (set-face-attribute 'default nil :font "Fira Code" :height barremacs/default-font-size)
+  (message "setting faces")
+  (set-face-attribute 'default nil :font "Fira Code" :height barremacs/default-font-size))
 
-  (set-face-attribute 'fixed-pitch nil :font "Fira Code" :height barremacs/default-font-size)
-
-  (set-face-attribute 'variable-pitch nil :font "Cantarell" :height barremacs/var-pitch-font-size))
-
+;;Sets the fonts correctly if running emacs in daemon mode.
 (if (daemonp)
     (add-hook 'after-make-frame-functions
               (lambda (frame)
@@ -55,143 +119,22 @@
                   (barremacs/set-font-faces))))
   (barremacs/set-font-faces))
 
-; (use-package simple-httpd)
+(use-package magit)
 
-                                        ; (add-to-list 'load-path "/home/barre/BSE/")
-                                        ; (require 'spotify)
+(require 'org-tempo)
+(add-to-list 'org-structure-template-alist '("sh" . "src shell"))
+(add-to-list 'org-structure-template-alist '("el" . "src emacs-lisp"))
+(add-to-list 'org-structure-template-alist '("py" . "src python"))
 
-;; Settings
-                                        ; (setq spotify-oauth2-client-secret "230474a9a95446dd99bf6a6570e2aa8f")
-                                        ; (setq spotify-oauth2-client-id "734b1bd830d74e5e9f761cc8b5e849d1")
-                                        ; (define-key spotify-mode-map (kbd "C-c .") 'spotify-command-map)
-                                        ; (setq spotify-transport 'connect)
+(defun barremacs/org-babel-tangle-config ()
+  (when (string-equal (file-name-directory (buffer-file-name))
+                      (expand-file-name "~/.dotfiles/emacs.d/"))
 
-;;  (use-package counsel-spotify)
-(setq counsel-spotify-client-id "734b1bd830d74e5e9f761cc8b5e849d1")
-(setq counsel-spotify-client-secret "230474a9a95446dd99bf6a6570e2aa8f")
-
-(use-package general
-  :config
-  (general-create-definer barremacs/leader-keys
-                                        ;:keymaps '(normal insert visual emacs)
-    :prefix "C-c"
-    :global-prefix "C-c")
-
-  (general-define-key
-   "C-M-j" 'counsel-switch-buffer
-   "C-M-," 'magit-status
-   "C-M-k" 'kill-buffer-and-window
-   "C-c a" 'org-agenda)  
+    (let ((org-confirm-babel-evaluate nil))
+      (org-babel-tangle))))
 
 
-
-  (barremacs/leader-keys
-    "c"  '(:ignore c :which-key "code")
-    "cc" '(comment-or-uncomment-region :which-key "comment") 
-    "cs" '(lsp-treemacs-symbols :which-key "treemacs-symbols")
-    "ct" '(treemacs :which-key "treemacs")
-    "cr" '(lsp-treemacs-references :which-key "references")
-    "t"  '(:ignore t :which-key "toggles")
-    "tt" '(counsel-load-theme :which-key "choose theme")
-    "s"  '(:ignore s :which-key "spotify")
-    "sn" '(counsel-spotify-next :which-key "next")
-    "sp" '(counsel-spotify-previous :which-key "previous")      
-    "ss" '(counsel-spotify-search-track :which-key "search track")
-    "sa" '(counsel-spotify-search-album :which-key "search album")
-    "st" '(counsel-spotify-toggle-play-pause :which-key "play/pause")))
-
-(use-package command-log-mode)
-
-(use-package doom-themes
-  :init (load-theme 'doom-one t))
-;;doom-gruvbox
-
-(use-package all-the-icons)
-
-(use-package doom-modeline
-  :init (doom-modeline-mode 1)
-  :custom ((doom-modeline-height 15)))
-
-(use-package which-key
-  :init (which-key-mode)
-  :diminish which-key-mode
-  :config
-  (setq which-key-idle-delay 1))
-
-(dolist (mode '(org-mode-hook
-                term-mode-hook
-                shell-mode-hook
-                treemacs-mode-hook
-                eshell-mode-hook))
-  (add-hook mode (lambda () (display-line-numbers-mode 0))))
-
-
-
-(use-package ivy
-  :diminish
-  :bind (("C-s" . swiper)
-         :map ivy-minibuffer-map
-         ("TAB" . ivy-alt-done)
-         ("C-l" . ivy-alt-done)
-         ("C-j" . ivy-next-line)
-         ("C-k" . ivy-previous-line)
-         :map ivy-switch-buffer-map
-         ("C-k" . ivy-previous-line)
-         ("C-l" . ivy-done)
-         ("C-d" . ivy-switch-buffer-kill)
-         :map ivy-reverse-i-search-map
-         ("C-k" . ivy-previous-line)
-         ("C-d" . ivy-reverse-i-search-kill))
-  :config
-  (ivy-mode 1))
-
-;; NOTE: The first time you load your configuration on a new machine, you'll
-;; need to run the following command interactively so that mode line icons
-;; display correctly:
-;;
-;; M-x all-the-icons-install-fonts
-
-
-
-
-
-
-
-
-
-(use-package ivy-rich
-  :init
-  (ivy-rich-mode 1))
-
-(use-package counsel
-  :bind (("M-x" . counsel-M-x)
-         ("C-x b" . counsel-ibuffer)
-         ("C-x C-f" . counsel-find-file)
-         :map minibuffer-local-map
-         ("C-r" . 'counsel-minibuffer-history))
-  :custom
-  (counsel-linux-app-format-function #'counsel-linux-app-format-function-name-only))
-
-(use-package helpful
-  :custom
-  (counsel-describe-function-function #'helpful-callable)
-  (counsel-describe-variable-function #'helpful-variable)
-  :bind
-  ([remap describe-function] . counsel-describe-function)
-  ([remap describe-command] . helpful-command)
-  ([remap describe-variable] . counsel-describe-variable)
-  ([remap describe-key] . helpful-key))
-
-(use-package hydra)
-
-(defhydra hydra-text-scale (:timeout 4)
-  "scale text"
-  ("j" text-scale-increase "in")
-  ("k" text-scale-decrease "out")
-  ("f" nil "finished" :exit t))
-
-(barremacs/leader-keys
-  "ts" '(hydra-text-scale/body :which-key "scale text"))
+(add-hook 'org-mode-hook (lambda () (add-hook 'after-save-hook #'barremacs/org-babel-tangle-config)))
 
 (defun barremacs/org-font-setup ()
   ;; Replaces list hyphen with a dot
@@ -226,8 +169,6 @@
   (variable-pitch-mode 1)
   (visual-line-mode 1))
 
-
-
 (use-package org
   :hook (org-mode . barremacs/org-mode-setup)  
   :config
@@ -237,115 +178,6 @@
   (setq org-agenda-start-with-log-mode t)
   (setq org-log-done 'time)
   (setq org-log-into-drawer t)
-
-  (setq org-agenda-files
-        '("~/Documents/OrgFiles/Tasks.org"))
-
-  (require 'org-habit)
-  (add-to-list 'org-modules 'org-habit)
-  (setq org-habit-graph-column 60)
-
-
-  (setq org-tag-alist
-        '((:startgroup)
-                                        ; Put mutually exclusive tags here
-          (:endgroup)
-          ("@errand" . ?E)
-          ("@home" . ?H)
-          ("@work" . ?W)
-          ("agenda" . ?a)
-          ("planning" . ?p)
-          ("publish" . ?P)
-          ("batch" . ?b)
-          ("note" . ?n)
-          ("idea" . ?i)))
-
-
-  (setq org-todo-keywords
-        '((sequence "TODO(t)" "NEXT(n)" "|" "DONE(d)")
-          (sequence "BACKLOG(b)" "PLAN(p)" "READY(r)" "ACTIVE(a)" "REVIEW(v)" "WAIT(w@/!)" "HOLD(h)" "|" "COMPLETED(c)" "CANC(k@)")))
-
-  (setq org-refile-targets
-        '(("Archive.org" :maxlevel . 1)
-          ("Tasks.org" :maxlevel . 1)))
-
-  (advice-add 'org-refile :after 'org-save-all-org-buffers)
-
-
-  (setq org-agenda-custom-commands
-        '(("d" "Dashboard"
-           ((agenda "" ((org-deadline-warning-days 7)))
-            (todo "NEXT"
-                  ((org-agenda-overriding-header "Next Tasks")))
-            (tags-todo "agenda/ACTIVE" ((org-agenda-overriding-header "Active Projects")))))
-
-          ("n" "Next Tasks"
-           ((todo "NEXT"
-                  ((org-agenda-overriding-header "Next Tasks")))))
-
-          ("W" "Work Tasks" tags-todo "+work-email")
-
-          ;; Low-effort next actions
-          ("e" tags-todo "+TODO=\"NEXT\"+Effort<15&+Effort>0"
-           ((org-agenda-overriding-header "Low Effort Tasks")
-            (org-agenda-max-todos 20)
-            (org-agenda-files org-agenda-files)))
-
-          ("w" "Workflow Status"
-           ((todo "WAIT"
-                  ((org-agenda-overriding-header "Waiting on External")
-                   (org-agenda-files org-agenda-files)))
-            (todo "REVIEW"
-                  ((org-agenda-overriding-header "In Review")
-                   (org-agenda-files org-agenda-files)))
-            (todo "PLAN"
-                  ((org-agenda-overriding-header "In Planning")
-                   (org-agenda-todo-list-sublevels nil)
-                   (org-agenda-files org-agenda-files)))
-            (todo "BACKLOG"
-                  ((org-agenda-overriding-header "Project Backlog")
-                   (org-agenda-todo-list-sublevels nil)
-                   (org-agenda-files org-agenda-files)))
-            (todo "READY"
-                  ((org-agenda-overriding-header "Ready for Work")
-                   (org-agenda-files org-agenda-files)))
-            (todo "ACTIVE"
-                  ((org-agenda-overriding-header "Active Projects")
-                   (org-agenda-files org-agenda-files)))
-            (todo "COMPLETED"
-                  ((org-agenda-overriding-header "Completed Projects")
-                   (org-agenda-files org-agenda-files)))
-            (todo "CANC"
-                  ((org-agenda-overriding-header "Cancelled Projects")
-                   (org-agenda-files org-agenda-files)))))))
-
-
-  (setq org-capture-templates
-        `(("t" "Tasks / Projects")
-          ("tt" "Task" entry (file+olp "~/Documents/OrgFiles/Tasks.org" "Inbox")
-           "* TODO %?\n  %U\n  %a\n  %i" :empty-lines 1)
-
-          ("j" "Journal Entries")
-          ("jj" "Journal" entry
-           (file+olp+datetree "~/Documents/OrgFiles/Journal.org")
-           "\n* %<%I:%M %p> - Journal :journal:\n\n%?\n\n"
-           ;; ,(dw/read-file-as-string "~/Notes/Templates/Daily.org")
-           :clock-in :clock-resume
-           :empty-lines 1)
-          ("jm" "Meeting" entry
-           (file+olp+datetree "~/Documents/OrgFiles/Journal.org")
-           "* %<%I:%M %p> - %a :meetings:\n\n%?\n\n"
-           :clock-in :clock-resume
-           :empty-lines 1)
-
-          ("w" "Workflows")
-          ("we" "Checking Email" entry (file+olp+datetree "~/Documents/OrgFiles/Journal.org")
-           "* Checking Email :email:\n\n%?" :clock-in :clock-resume :empty-lines 1)
-
-          ("m" "Metrics Capture")
-          ("mw" "Weight" table-line (file+headline "~/Documents/OrgFiles/Metrics.org" "Weight")
-           "| %U | %^{Weight} | %^{Notes} |" :kill-buffer t)))
-
   (barremacs/org-font-setup))
 
 (use-package org-bullets
@@ -363,49 +195,133 @@
   :defer t
   :hook (org-mode . barremacs/org-mode-visual-fill))
 
-(org-babel-do-load-languages
- 'org-babel-load-languages
- '((emacs-lisp . t)
-   (python . t)))
+(setq mode-line-format
+      (list "-"
+            'mode-line-mule-info
+            'mode-line-modified
+            'mode-line-frame-identification
+            "%b  "
 
-(push '("conf-unix" . conf-unix) org-src-lang-modes)
-
-(require 'org-tempo)
-
-(add-to-list 'org-structure-template-alist '("sh" . "src shell"))
-(add-to-list 'org-structure-template-alist '("el" . "src emacs-lisp"))
-(add-to-list 'org-structure-template-alist '("py" . "src python"))
-
-;;Automatically tangle Emacs.org config file when saved
-
-(defun barremacs/org-babel-tangle-config ()
-  (when (string-equal (file-name-directory (buffer-file-name))
-                      (expand-file-name "~/.emacs.d/"))
-
-    (let ((org-confirm-babel-evaluate nil))
-      (org-babel-tangle))))
+            ;; Note that this is evaluated while making the list.
+            ;; It makes a mode line construct which is just a string.
+            (getenv "HOST")
 
 
-(add-hook 'org-mode-hook (lambda () (add-hook 'after-save-hook #'barremacs/org-babel-tangle-config)))
 
-(use-package dashboard
-  :ensure t
+            ;;":"
+            'default-directory
+            "   "
+            ;;'global-mode-string
+            ;;"   %[("
+            ;;'(:eval (format-time-string "%F"))
+            'mode-line-process
+            'minor-mode-alist
+            ;;"%n"
+            ;;")%]--"
+
+            '(which-function-mode ("" which-func-format "--"))
+            '(line-number-mode "%l:")
+            '(column-number-mode "%c ")
+
+
+            ;;'(-3 "%p")
+            ))
+
+(use-package ivy
+  :diminish
+  :bind (("C-s" . swiper)
+         :map ivy-minibuffer-map
+         ("TAB" . ivy-alt-done)
+         ("C-l" . ivy-alt-done)
+         ("C-j" . ivy-next-line)
+         ("C-k" . ivy-previous-line)
+         :map ivy-switch-buffer-map
+         ("C-k" . ivy-previous-line)
+         ("C-l" . ivy-done)
+         ("C-d" . ivy-switch-buffer-kill)
+         :map ivy-reverse-i-search-map
+         ("C-k" . ivy-previous-line)
+         ("C-d" . ivy-reverse-i-search-kill))
   :config
-  (dashboard-setup-startup-hook))
+  (ivy-mode 1))
 
-(setq initial-buffer-choice (lambda () (get-buffer-create "*dashboard*")))
 
-(setq dashboard-banner-logo-title "Welcome back to emacs, master.")
-(setq dashboard-startup-banner 'logo)
-(setq dashboard-items '((recents . 5)
-                        (projects . 5)
-                        (agenda . 5)))
-(setq dashboard-set-heading-icons t)
-(setq dashboard-set-file-icons t)
+(use-package ivy-rich
+  :init
+  (ivy-rich-mode 1))
+
+(use-package counsel
+  :bind (("M-x" . counsel-M-x)
+         ("C-x b" . counsel-ibuffer)
+         ("C-x C-f" . counsel-find-file)
+         :map minibuffer-local-map
+         ("C-r" . 'counsel-minibuffer-history))
+  :custom
+  (counsel-linux-app-format-function #'counsel-linux-app-format-function-name-only))
+
+(use-package which-key
+  :init (which-key-mode)
+  :diminish which-key-mode
+  :config
+  (setq which-key-idle-delay 1))
+
+(use-package general
+  :config
+  (general-create-definer barremacs/leader-keys
+    :prefix "C-c"
+    :global-prefix "C-c"))
+
+(general-define-key
+ "C-M-j" 'counsel-switch-buffer
+ "C-M-," 'magit-status
+ "C-M-k" 'kill-buffer-and-window
+ "C-c a" 'org-agenda
+ "C-M-f" 'treemacs
+ "M-k" 'windmove-right
+ "M-j" 'windmove-left)
+
+(barremacs/leader-keys
+  "c" '(:ignore c :which-key "code")
+  "cc" '(comment-or-uncomment-region :which-key "comment")
+  "cf" '(hs-hide-block :which-key "fold")
+  "cd" '(hs-show-block :which-key "unfold")
+  "ca" '(hs-hide-all :which-key "fold all")
+  "cu" '(hs-show-all :which-key "unfold all")
+  "t" '(:ignore t :which-key "toggles")
+  "tt" '(load-theme :which-key "theme")
+  "tl" '(toggle-truncate-lines :which-key "truncation"))
+
+(use-package rainbow-delimiters
+  :hook (prog-mode . rainbow-delimiters-mode))
+
+(use-package helpful
+  :custom
+  (counsel-describe-function-function #'helpful-callable)
+  (counsel-describe-variable-function #'helpful-variable)
+  :bind
+  ([remap describe-function] . counsel-describe-function)
+  ([remap describe-command] . helpful-command)
+  ([remap describe-variable] . counsel-describe-variable)
+  ([remap describe-key] . helpful-key))
 
 (use-package yasnippet)
 (use-package yasnippet-snippets)
 (yas-global-mode 1)
+
+(use-package projectile
+  :diminish projectile-mode
+  :config (projectile-mode)
+  :custom ((projectile-completion-system 'ivy))
+  :bind-keymap
+  ("C-c p" . projectile-command-map)
+  :init
+  ;; NOTE: Set this to the folder where you keep your Git repos!
+  (when (file-directory-p "~/Development/")
+    (setq projectile-project-search-path '("~/Development/")))
+  (setq projectile-switch-project-action #'projectile-dired))
+
+(use-package counsel-projectile
+  :config (counsel-projectile-mode))
 
 (defun barremacs/lsp-mode-setup ()
   (setq lsp-headerline-breadcrumb-segments '(path-up-to-project file symbolds))
@@ -413,6 +329,7 @@
 
 (use-package lsp-mode 
   :commands (lsp lsp-deferred)
+  :hook (prog-mode . lsp-mode)
   :init
   (setq lsp-keymap-prefix "C-c l")
   :config
@@ -428,220 +345,47 @@
 (use-package lsp-treemacs
   :after lsp)
 
-(use-package dap-mode)
-
-(use-package csharp-mode
-  :mode "\\.cs\\'"
-  :hook (csharp-mode . lsp-deferred))
-
-(use-package js2-mode
-  :mode "\\.js\\'"
-  :hook (js2-mode . lsp-deferred))
-
-(use-package web-mode
-  :mode "\\.html\\'"
-  :hook (web-mode . lsp-deferred))
-
-                                        ;(add-hook 'html-mode 'lsp-deferred)
-
-(use-package css-mode
-  :mode "\\.css\\'"
-  :hook (css-mode . lsp-deferred))
-
-(use-package lsp-python-ms
-  :ensure t
-  :init (setq lsp-python-ms-auto-install-server t)
-  :hook (python-mode . (lambda ()
-                         (require 'lsp-python-ms)
-                         (lsp))))  ; or lsp-deferred
-
-;; (use-package c++-mode
-;;   :mode "\\.cpp\\'"
-;;   :hook (c++-mode . lsp-deferred))
-
-(add-hook 'c++-mode 'lsp-deferred)
-
-;; (use-package emacs-lisp-mode
-;;   :mode "\\.el\\'"
-;;   :hook (emacs-lisp-mode . lsp-deferred))
-
-;; (add-hook 'c++-mo 'lsp-deferred)
-
-(use-package typescript-mode
-  :mode "\\.ts\\'"
-  :hook (typescript-mode . lsp-deferred)
-  :config
-  (setq typescript-indent-level 2)
-  (require 'dap-node)
-  (dap-node-setup))
-
-(use-package projectile
-  :diminish projectile-mode
-  :config (projectile-mode)
-  :custom ((projectile-completion-system 'ivy))
-  :bind-keymap
-  ("C-c p" . projectile-command-map)
-  :init
-  ;; NOTE: Set this to the folder where you keep your Git repos!
-  (when (file-directory-p "~/Projects/Code")
-    (setq projectile-project-search-path '("~/Projects/Code")))
-  (setq projectile-switch-project-action #'projectile-dired))
-
-(use-package counsel-projectile
-  :config (counsel-projectile-mode))
-
-(defun barremacs/expand-with-company ()
-  (interactive)
-  (call-interactively 'company-complete-selection)
-  (call-interactively 'yas-expand))
+(add-hook 'prog-mode-hook 'lsp-deferred)
 
 (use-package company
   :after lsp-mode
   :hook (lsp-mode . company-mode)
   (lsp-mode . yas-minor-mode)
-  :bind (:map company-active-map
-              ("<tab>" .  barremacs/expand-with-company))
-  (:map lsp-mode-map
-        ("<tab>" . company-indent-or-complete-common))
+
   :custom
   (company-minimum-prefix-length 1)
   (company-idle-delay 0.0))
 
-(use-package company-box
-  :hook (company-mode . company-box-mode))
+;;(require 'company-lsp)
+;;(push 'company-lsp company-backends)
 
-(use-package magit
-  :custom
-  (magit-display-buffer-function #'magit-display-buffer-same-window-except-diff-v1))
+(with-eval-after-load 'company 
 
+  (define-key company-active-map (kbd "<tab>") 'company-complete-selection)
+  (define-key company-active-map (kbd "TAB") 'company-complete-selection))
 
-;; NOTE: Make sure to configure a GitHub token before using this package!
-;; - https://magit.vc/manual/forge/Token-Creation.html#Token-Creation
-;; - https://magit.vc/manual/ghub/Getting-Started.html#Getting-Started
-(use-package forge)
+(use-package csharp-mode
+  :mode "\\.cs\\'"
+  :hook (csharp-mode . lsp-deferred))
 
-(use-package rainbow-delimiters
-  :hook (prog-mode . rainbow-delimiters-mode))
+(use-package treemacs)
+(use-package treemacs-projectile)
 
-(use-package gdscript-mode
-  :mode "\\.gd\\'"
-  :hook (gdscript-mode . lsp-deferred))
+(setq treemacs-width 24)
 
-(use-package term
-  :config
-  (setq explicit-shell-file-name "bash")
-  (setq term-prompt-regexp "^[^#$%>\n]*[#$%>] *"))
+(defun toggle-fold ()
+  (interactive)
+  (save-excursion
+    (end-of-line)
+    (hs-toggle-hiding))
 
-(use-package dired
-  :ensure nil
-  :commands (dired dired-jump)
-  :bind (("C-x C-j" . dired-jump))
-  :custom ((dired-listing-switches "-agho --group-directories-first"))
-  :config
-  (define-key dired-mode-map (kbd "C-b") 'dired-single-up-directory)
-  (define-key dired-mode-map (kbd "C-f") 'dired-single-buffer)
-  (define-key dired-mode-map (kbd "RET") 'dired-single-buffer))
+  (toggle-fold))
 
+(add-hook 'prog-mode-hook 'hs-minor-mode)
 
-(use-package dired-single)
+(set-default 'truncate-lines t)
 
-(use-package all-the-icons-dired
-  :hook (dired-mode . all-the-icons-dired-mode))
+(add-hook 'prog-mode-hook 'electric-pair-mode)
 
-(use-package dired-hide-dotfiles
-  :hook (dired-mode . dired-hide-dotfiles-mode)
-  :config 
-  (define-key dired-mode-map (kbd "H") 'dired-hide-dotfiles-mode))
-
-(defun barremacs/exwm-update-class ()
-  (exwm-workspace-rename-buffer exwm-class-name))
-
-(use-package exwm
-  :config
-  ;; Set the default number of workspaces
-  (setq exwm-workspace-number 5)
-
-  ;; When window "class" updates, use it to set the buffer name
-  (add-hook 'exwm-update-class-hook #'barremacs/exwm-update-class)
-
-  ;;Set screen resolution
-  (require 'exwm-randr)
-  (exwm-randr-enable)
-  (start-process-shell-command "xrandr" nil "xrandr --output DP-1 --off --output HDMI-1 --mode 1920x1080 --pos 0x0 --rotate normal --output DVI-D-1 --off")
-
-  (require 'exwm-systemtray)
-  (exwm-systemtray-enable)
-
-  ;; These keys should always pass through to Emacs
-  (setq exwm-input-prefix-keys
-        '(?\C-x
-          ?\C-u
-          ?\C-h
-          ?\M-x
-          ?\M-`
-          ?\M-&
-          ?\M-:
-          ?\C-\M-j  ;; Buffer list
-          ?\C-\M-k  ;; Kill current buffer
-          ))  ;; Ctrl+Space
-
-  ;; Ctrl+Q will enable the next key to be sent directly
-  (define-key exwm-mode-map [?\C-q] 'exwm-input-send-next-key)
-
-  ;; Set up global key bindings.  These always work, no matter the input state!
-  ;; Keep in mind that changing this list after EXWM initializes has no effect.
-  (setq exwm-input-global-keys
-        `(
-          ;; Reset to line-mode (C-c C-k switches to char-mode via exwm-input-release-keyboard)
-          ([?\s-r] . exwm-reset)
-
-          ;; Move between windows
-          ([?\s-j] . windmove-left)
-          ([?\s-k] . windmove-right)
-          ([?\s-h] . windmove-up)
-          ([?\s-n] . windmove-down)
-
-          ;; Launch applications via shell command
-          ([?\s-&] . (lambda (command)
-                       (interactive (list (read-shell-command "$ ")))
-                       (start-process-shell-command command nil command)))
-
-          ;; Switch workspace
-          ([?\s-w] . exwm-workspace-switch)
-
-          ([?\s-§] . (lambda () (interactive)
-                       (exwm-workspace-switch-create 0)))
-
-          ;; 's-N': Switch to certain workspace with Super (Win) plus a number key (0 - 9)
-          ,@(mapcar (lambda (i)
-                      `(,(kbd (format "s-%d" i)) .
-                        (lambda ()
-                          (interactive)
-                          (exwm-workspace-switch-create ,i))))
-                    (number-sequence 0 9))))
-
-  (exwm-enable))
-
-;; Make ESC quit prompts
-
-
-;; Initialize package sources
-
-;; Disable line numbers for some modes
-
-
-
-(custom-set-variables
- ;; custom-set-variables was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
- '(org-agenda-files '("~/Documents/hello.org" "~/Documents/OrgFiles/Tasks.org"))
- '(package-selected-packages
-   '(visual-fill-column visual-fill visual-fill-mode org-bullets org-mode which-key use-package rainbow-delimiters ivy-rich hydra helpful general forge evil-collection doom-themes doom-modeline counsel-projectile command-log-mode)))
-(custom-set-faces
- ;; custom-set-faces was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
- )
+(set-frame-parameter (selected-frame) 'alpha '(98 . 98))
+(add-to-list 'default-frame-alist '(alpha . (98 . 97)))
