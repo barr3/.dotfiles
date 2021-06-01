@@ -315,6 +315,10 @@
     "ca" '(hs-hide-all :which-key "fold all")
     "cu" '(hs-show-all :which-key "unfold all")
     "g" '(magit-status :which-key "git")
+    "p" '(counsel-projectile-switch-project :which-key "project")
+    "f" '(:ignore f :which-key "file")
+    "ff" '(find-file "~/" :which-key "find file")
+
     "t" '(:ignore t :which-key "toggles")
     "tt" '(load-theme :which-key "theme")
     "tl" '(toggle-truncate-lines :which-key "truncation"))) 
