@@ -1,0 +1,6 @@
+#+title: qtile Configuration File
+#+PROPERTY: header-args: python :tangle ./config.py
+* Test
+#+begin_src python :tangle yes
+print("hej")
+#+end_src

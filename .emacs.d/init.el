@@ -72,39 +72,39 @@
 
 
 (setq-default mode-line-format
-      (list
-     " "
-     '(:eval mode-name)
+              (list
+               " "
+               '(:eval mode-name)
 
-       '(:eval (when-let (vc vc-mode)
-                 (list " "
-                       (propertize (substring vc 5)
-                                   'face 'font-lock-comment-face)
-                       " ")))
-
-
+               '(:eval (when-let (vc vc-mode)
+                         (list " "
+                               (propertize (substring vc 5)
+                                           'face 'font-lock-comment-face)
+                               " ")))
 
 
 
-       '(:eval
-         (list
-          (propertize " %b " 'help-echo (buffer-file-name))
-          (when (buffer-modified-p)
-            (propertize (all-the-icons-faicon "file"
-                                              :face 'all-the-icons-icon-for-mode
-                                              :height 0.7
-                                              :v-adjust 0.01
-                                              )))
-          (when buffer-read-only
-            (propertize (all-the-icons-faicon "lock"
-                                              :face 'all-the-icons-icon-for-mode
-                                              :height 0.7
-                                            :v-adjust 0.001
-                                              )))))
-     "  line %l"
-     "               Overhead the albatross hangs motionless up on the air...                   "
 
-       ))
+
+               '(:eval
+                 (list
+                  (propertize " %b " 'help-echo (buffer-file-name))
+                  (when (buffer-modified-p)
+                    (propertize (all-the-icons-faicon "file"
+                                                      :face 'all-the-icons-icon-for-mode
+                                                      :height 0.7
+                                                      :v-adjust 0.01
+                                                      )))
+                  (when buffer-read-only
+                    (propertize (all-the-icons-faicon "lock"
+                                                      :face 'all-the-icons-icon-for-mode
+                                                      :height 0.7
+                                                      :v-adjust 0.001
+                                                      )))))
+               "  line %l"
+               "               Overhead the albatross hangs motionless up on the air...                   "
+
+               ))
 
 (defun barremacs/set-font-faces ()
   (message "setting faces")
@@ -119,7 +119,13 @@
                   (barremacs/set-font-faces))))
   (barremacs/set-font-faces))
 
-(use-package magit)
+(use-package magit
+  :custom
+  (magit-display-buffer-function #'magit-display-buffer-same-window-except-diff-v1))
+
+(use-package evil-magit
+  :after magit)
+(use-package forge)
 
 (require 'org-tempo)
 (add-to-list 'org-structure-template-alist '("sh" . "src shell"))
@@ -128,7 +134,7 @@
 
 (defun barremacs/org-babel-tangle-config ()
   (when (string-equal (file-name-directory (buffer-file-name))
-                      (expand-file-name "~/.dotfiles/emacs.d/"))
+                      (expand-file-name "~/.dotfiles/"))
 
     (let ((org-confirm-babel-evaluate nil))
       (org-babel-tangle))))
@@ -265,32 +271,6 @@
   :config
   (setq which-key-idle-delay 1))
 
-(use-package general
-  :config
-  (general-create-definer barremacs/leader-keys
-    :prefix "C-c"
-    :global-prefix "C-c"))
-
-(general-define-key
- "C-M-j" 'counsel-switch-buffer
- "C-M-," 'magit-status
- "C-M-k" 'kill-buffer-and-window
- "C-c a" 'org-agenda
- "C-M-f" 'treemacs
- "M-k" 'windmove-right
- "M-j" 'windmove-left)
-
-(barremacs/leader-keys
-  "c" '(:ignore c :which-key "code")
-  "cc" '(comment-or-uncomment-region :which-key "comment")
-  "cf" '(hs-hide-block :which-key "fold")
-  "cd" '(hs-show-block :which-key "unfold")
-  "ca" '(hs-hide-all :which-key "fold all")
-  "cu" '(hs-show-all :which-key "unfold all")
-  "t" '(:ignore t :which-key "toggles")
-  "tt" '(load-theme :which-key "theme")
-  "tl" '(toggle-truncate-lines :which-key "truncation"))
-
 (use-package rainbow-delimiters
   :hook (prog-mode . rainbow-delimiters-mode))
 
@@ -307,6 +287,62 @@
 (use-package yasnippet)
 (use-package yasnippet-snippets)
 (yas-global-mode 1)
+
+;; Make ESC quit prompts
+(global-set-key (kbd "<escape>") 'keyboard-escape-quit)
+
+(use-package general
+  :config
+  (general-create-definer barremacs/leader-keys
+    :keymaps '(normal insert visual emacs)
+    :prefix "SPC"
+    :global-prefix "C-SPC")
+
+  (general-define-key
+   "C-M-j" 'counsel-switch-buffer
+   ;; "C-M-," 'magit-status
+   "C-M-k" 'kill-buffer-and-window
+   "C-c a" 'org-agenda
+   "C-M-f" 'treemacs)
+
+
+
+  (barremacs/leader-keys
+    "c" '(:ignore c :which-key "code")
+    "cc" '(comment-or-uncomment-region :which-key "comment")
+    "cf" '(hs-hide-block :which-key "fold")
+    "cd" '(hs-show-block :which-key "unfold")
+    "ca" '(hs-hide-all :which-key "fold all")
+    "cu" '(hs-show-all :which-key "unfold all")
+    "g" '(magit-status :which-key "git")
+    "t" '(:ignore t :which-key "toggles")
+    "tt" '(load-theme :which-key "theme")
+    "tl" '(toggle-truncate-lines :which-key "truncation"))) 
+
+
+
+(use-package evil
+  :init
+  (setq evil-want-integration t)
+  (setq evil-want-keybinding nil)
+  (setq evil-want-C-u-scroll t)
+  (setq evil-want-C-i-jump nil)
+  :config
+  (evil-mode 1)
+  (define-key evil-insert-state-map (kbd "C-g") 'evil-normal-state)
+  (define-key evil-insert-state-map (kbd "C-h") 'evil-delete-backward-char-and-join)
+
+  ;; Use visual line motions even outside of visual-line-mode buffers
+  (evil-global-set-key 'motion "j" 'evil-next-visual-line)
+  (evil-global-set-key 'motion "k" 'evil-previous-visual-line)
+
+  (evil-set-initial-state 'messages-buffer-mode 'normal)
+  (evil-set-initial-state 'dashboard-mode 'normal))
+
+(use-package evil-collection
+  :after evil
+  :config
+  (evil-collection-init))
 
 (use-package projectile
   :diminish projectile-mode
@@ -388,4 +424,4 @@
 (add-hook 'prog-mode-hook 'electric-pair-mode)
 
 (set-frame-parameter (selected-frame) 'alpha '(98 . 98))
-(add-to-list 'default-frame-alist '(alpha . (98 . 97)))
+(add-to-list 'default-frame-alist '(alpha . (98 . 98)))

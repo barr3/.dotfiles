@@ -1,11 +1,16 @@
-  -- Base
+#+title: Xmonad Configuration Files
+#+PROPERTY: header-args:haskell :tangle ./.xmonad/xmonad.hs :mkdirp yes
+A lot of (if not most) of the config is stolen from [[https://gitlab.com/dwt1/dotfiles/-/tree/master/.xmonad][DistroTubes xmonad config]]. I do not use xmonad very often.
+* Base
+#+begin_src 
 import XMonad
 import System.Directory
 import System.IO (hPutStrLn)
 import System.Exit (exitSuccess)
 import qualified XMonad.StackSet as W
-
-    -- Actions
+#+end_src
+* Actions
+#+begin_src 
 import XMonad.Actions.CopyWindow (kill1)
 import XMonad.Actions.CycleWS (Direction1D(..), moveTo, shiftTo, WSType(..), nextScreen, prevScreen)
 -- import XMonad.Actions.GridSelect
@@ -15,16 +20,19 @@ import XMonad.Actions.RotSlaves (rotSlavesDown, rotAllDown)
 import XMonad.Actions.WindowGo (runOrRaise)
 import XMonad.Actions.WithAll (sinkAll, killAll)
 import qualified XMonad.Actions.Search as S
-
-    -- Data
+#+end_src
+* Data
+#+begin_src
 import Data.Char (isSpace, toUpper)
 import Data.Maybe (fromJust)
 import Data.Monoid
 import Data.Maybe (isJust)
 import Data.Tree
-import qualified Data.Map as M
+import qualified Data.Map as M 
+#+end_src
 
-    -- Hooks
+* Hooks
+#+begin_src 
 import XMonad.Hooks.DynamicLog (dynamicLogWithPP, wrap, xmobarPP, xmobarColor, shorten, PP(..))
 import XMonad.Hooks.EwmhDesktops  -- for some fullscreen events, also for xcomposite in obs.
 import XMonad.Hooks.ManageDocks (avoidStruts, docksEventHook, manageDocks, ToggleStruts(..))
@@ -32,8 +40,9 @@ import XMonad.Hooks.ManageHelpers (isFullscreen, doFullFloat)
 import XMonad.Hooks.ServerMode
 import XMonad.Hooks.SetWMName
 import XMonad.Hooks.WorkspaceHistory
-
-    -- Layouts
+#+end_src
+* Layouts
+#+begin_src 
 import XMonad.Layout.Accordion
 import XMonad.Layout.GridVariants (Grid(Grid))
 import XMonad.Layout.SimplestFloat
@@ -41,8 +50,9 @@ import XMonad.Layout.Spiral
 import XMonad.Layout.ResizableTile
 import XMonad.Layout.Tabbed
 import XMonad.Layout.ThreeColumns
-
-    -- Layouts modifiers
+#+end_src
+* Layouts modifiers
+#+begin_src 
 import XMonad.Layout.LayoutModifier
 import XMonad.Layout.LimitWindows (limitWindows, increaseLimit, decreaseLimit)
 import XMonad.Layout.Magnifier
@@ -57,14 +67,17 @@ import XMonad.Layout.SubLayouts
 import XMonad.Layout.WindowArranger (windowArrange, WindowArrangerMsg(..))
 import qualified XMonad.Layout.ToggleLayouts as T (toggleLayouts, ToggleLayout(Toggle))
 import qualified XMonad.Layout.MultiToggle as MT (Toggle(..))
-
-   -- Utilities
+#+end_src
+* Utilities
+#+begin_src 
 import XMonad.Util.Dmenu
 import XMonad.Util.EZConfig (additionalKeysP)
 import XMonad.Util.NamedScratchpad
 import XMonad.Util.Run (runProcessWithInput, safeSpawn, spawnPipe)
 import XMonad.Util.SpawnOnce
-
+#+end_src
+* Variables
+#+begin_src 
 myFont :: String
 myFont = "xft:Fira Code:regular:size=9:antialias=true:hinting=true"
 
@@ -99,10 +112,14 @@ altMask = mod1Mask          -- Setting this for use in xprompts
 windowCount :: X (Maybe String)
 windowCount = gets $ Just . show . length . W.integrate' . W.stack . W.workspace . W.current . windowset
 
+#+end_src
+* Startup hook
+This is what gets run when starting up xmonad
+#+begin_src 
 myStartupHook :: X ()
 myStartupHook = do
     spawnOnce "lxsession &"
-    spawnOnce "picom &"
+    spawnOnce "picom --vsync &"
     spawnOnce "nm-applet &"
     spawnOnce "volumeicon &"
     spawnOnce "conky -c $HOME/.config/conky/xmonad.conkyrc"
@@ -121,94 +138,9 @@ myStartupHook = do
     spawnOnce "xrandr --output DP-1 --off --output HDMI-1 --mode 1920x1080 --pos 1680x0 --rotate normal --output DVI-D-1 --mode 1680x1050 --pos 0x0 --rotate normal"
     
     setWMName "LG3D"
-
--- myColorizer :: Window -> Bool -> X (String, String)
--- myColorizer = colorRangeFromClassName
---                   (0x28,0x2c,0x34) -- lowest inactive bg
---                   (0x28,0x2c,0x34) -- highest inactive bg
---                   (0xc7,0x92,0xea) -- active bg
---                   (0xc0,0xa7,0x9a) -- inactive fg
---                   (0x28,0x2c,0x34) -- active fg
-
--- -- gridSelect menu layout
--- mygridConfig :: p -> GSConfig Window
--- mygridConfig colorizer = (buildDefaultGSConfig myColorizer)
---     { gs_cellheight   = 40
---     , gs_cellwidth    = 200
---     , gs_cellpadding  = 6
---     , gs_originFractX = 0.5
---     , gs_originFractY = 0.5
---     , gs_font         = myFont
---     }
-
--- spawnSelected' :: [(String, String)] -> X ()
--- spawnSelected' lst = gridselect conf lst >>= flip whenJust spawn
---     where conf = def
---                    { gs_cellheight   = 40
---                    , gs_cellwidth    = 200
---                    , gs_cellpadding  = 6
---                    , gs_originFractX = 0.5
---                    , gs_originFractY = 0.5
---                    , gs_font         = myFont
---                    }
-
--- myAppGrid = [ ("Audacity", "audacity")
---                  , ("Deadbeef", "deadbeef")
---                  , ("Emacs", "emacsclient -c -a emacs")
---                  , ("Firefox", "firefox")
---                  , ("Geany", "geany")
---                  , ("Geary", "geary")
---                  , ("Gimp", "gimp")
---                  , ("Kdenlive", "kdenlive")
---                  , ("LibreOffice Impress", "loimpress")
---                  , ("LibreOffice Writer", "lowriter")
---                  , ("OBS", "obs")
---                  , ("PCManFM", "pcmanfm")
---                  ]
-
--- myScratchPads :: [NamedScratchpad]
--- myScratchPads = [ NS "terminal" spawnTerm findTerm manageTerm
---                 , NS "mocp" spawnMocp findMocp manageMocp
---                 , NS "calculator" spawnCalc findCalc manageCalc
---                 ]
---   where
---     spawnTerm  = myTerminal ++ " -t scratchpad"
---     findTerm   = title =? "scratchpad"
---     manageTerm = customFloating $ W.RationalRect l t w h
---                where
---                  h = 0.9
---                  w = 0.9
---                  t = 0.95 -h
---                  l = 0.95 -w
---     spawnMocp  = myTerminal ++ " -t mocp -e mocp"
---     findMocp   = title =? "mocp"
---     manageMocp = customFloating $ W.RationalRect l t w h
---                where
---                  h = 0.9
---                  w = 0.9
---                  t = 0.95 -h
---                  l = 0.95 -w 
---     spawnCalc  = "qalculate-gtk"
---     findCalc   = className =? "Qalculate-gtk"
---     manageCalc = customFloating $ W.RationalRect l t w h
---                where
---                  h = 0.5
---                  w = 0.4
---                  t = 0.75 -h
---                  l = 0.70 -w
-
---Makes setting the spacingRaw simpler to write. The spacingRaw module adds a configurable amount of space around windows.
-mySpacing :: Integer -> l a -> XMonad.Layout.LayoutModifier.ModifiedLayout Spacing l a
-mySpacing i = spacingRaw False (Border i i i i) True (Border i i i i) True
-
--- Below is a variation of the above except no borders are applied
--- if fewer than two windows. So a single window has no gaps.
-mySpacing' :: Integer -> l a -> XMonad.Layout.LayoutModifier.ModifiedLayout Spacing l a
-mySpacing' i = spacingRaw True (Border i i i i) True (Border i i i i) True
-
--- Defining a bunch of layouts, many that I don't use.
--- limitWindows n sets maximum number of windows displayed for layout.
--- mySpacing n sets the gap size around the windows.
+#+end_src
+* Defining layouts
+#+begin_src 
 tall     = renamed [Replace "tall"]
            $ smartBorders
            $ addTabs shrinkText myTabTheme
@@ -270,7 +202,9 @@ tallAccordion  = renamed [Replace "tallAccordion"]
 wideAccordion  = renamed [Replace "wideAccordion"]
            $ Mirror Accordion
 
--- setting colors for tabs layout and tabs sublayout.
+#+end_src
+* Setting colors
+#+begin_src 
 myTabTheme = def { fontName            = myFont
                  , activeColor         = "#46d9ff"
                  , inactiveColor       = "#313846"
@@ -279,8 +213,6 @@ myTabTheme = def { fontName            = myFont
                  , activeTextColor     = "#282c34"
                  , inactiveTextColor   = "#d0d0d0"
                  }
-
--- Theme for showWName which prints current workspace when you change workspaces.
 myShowWNameTheme :: SWNConfig
 myShowWNameTheme = def
     { swn_font              = "xft:Ubuntu:bold:size=60"
@@ -289,7 +221,9 @@ myShowWNameTheme = def
     , swn_color             = "#ffffff"
     }
 
--- The layout hook
+#+end_
+* Layout hook
+#+begin_src 
 myLayoutHook = avoidStruts $ mouseResize $ windowArrange $ T.toggleLayouts floats
                $ mkToggle (NBFULL ?? NOBORDERS ?? EOT) myDefaultLayout
              where
@@ -305,13 +239,17 @@ myLayoutHook = avoidStruts $ mouseResize $ windowArrange $ T.toggleLayouts float
                                  ||| tallAccordion
                                  ||| wideAccordion
 
--- myWorkspaces = [" 1 ", " 2 ", " 3 ", " 4 ", " 5 ", " 6 ", " 7 ", " 8 ", " 9 "]
+#+end_src
+* Workspaces
+#+begin_src 
 myWorkspaces = [" dev ", " www ", " sys ", " doc ", " disc ", " scl ", " mus ", " vid ", " gfx "]
 myWorkspaceIndices = M.fromList $ zipWith (,) myWorkspaces [1..] -- (,) == \x y -> (x,y)
 
 clickable ws = "<action=xdotool key super+"++show i++">"++ws++"</action>"
     where i = fromJust $ M.lookup ws myWorkspaceIndices
-
+#+end_src
+* Manage hook
+#+begin_src
 myManageHook :: XMonad.Query (Data.Monoid.Endo WindowSet)
 myManageHook = composeAll
      -- 'doFloat' forces a window to float.  Useful for dialog boxes and such.
@@ -334,11 +272,15 @@ myManageHook = composeAll
      , className =? "qutebrowser"     --> doShift ( myWorkspaces !! 1 )
      , className =? "mpv"             --> doShift ( myWorkspaces !! 7 )
      , className =? "Gimp"            --> doShift ( myWorkspaces !! 8 )
-     , className =? "VirtualBox Manager" --> doShift  ( myWorkspaces !! 4 )
+     , className =? "discord"         --> doShift ( myWorkspaces !! 5 )
+     , className =? "spotify"         --> doShift ( myWorkspaces !! 7 )
      , (className =? "firefox" <&&> resource =? "Dialog") --> doFloat  -- Float Firefox Dialog
      ]
      -- <+> namedScratchpadManageHook myScratchPads
 
+#+end_src
+* Keybindings
+#+begin_src 
 myKeys :: [(String, X ())]
 myKeys =
     -- Xmonad
@@ -349,7 +291,7 @@ myKeys =
     -- Run Prompt
     -- M-p was the default keybinding.  I've changed it to M-S-RET because I will use
     -- M-p as part of the keychord for the other dmenu script bindings.
-        , ("M-S-<Return>", spawn "dmenu_run -i -p \"Run: \"") -- Dmenu
+        , ("M-r", spawn "dmenu_run -i -p \"Run: \"") -- Dmenu
 
     -- Other Dmenu Prompts
     -- In Xmonad and many tiling window managers, M-p is the default keybinding to
@@ -367,12 +309,12 @@ myKeys =
         
     -- Useful programs to have a keybinding for launch
         , ("M-<Return>", spawn (myTerminal))
-        , ("M-b", spawn (myBrowser ++ " www.youtube.com/c/DistroTube/"))
+        , ("M-b", spawn (myBrowser))
         , ("M-M1-h", spawn (myTerminal ++ " -e htop"))
         
     -- Kill windows
-        , ("M-S-c", kill1)     -- Kill the currently focused client
-        , ("M-S-a", killAll)   -- Kill all windows on current workspace
+        , ("M-u", kill1)     -- Kill the currently focused client
+        , ("M-S-k", killAll)   -- Kill all windows on current workspace
         
     -- Workspaces
         , ("M-.", nextScreen)  -- Switch focus to next monitor
@@ -382,12 +324,12 @@ myKeys =
         
     -- Floating windows
         , ("M-f", sendMessage (T.Toggle "floats")) -- Toggles my 'floats' layout
-        , ("M-t", withFocused $ windows . W.sink)  -- Push floating window back to tile
-        , ("M-S-t", sinkAll)                       -- Push ALL floating windows to tile
+       , ("M-S-t", withFocused $ windows . W.sink)  -- Push floating window back to tile
+        , ("M-S-M1-t", sinkAll)                       -- Push ALL floating windows to tile
 
     -- Increase/decrease spacing (gaps)
-        , ("M-d", decWindowSpacing 4)           -- Decrease window spacing
-        , ("M-i", incWindowSpacing 4)           -- Increase window spacing
+        , ("M-C-d", decWindowSpacing 4)           -- Decrease window spacing
+        , ("M-C-i", incWindowSpacing 4)           -- Increase window spacing
         , ("M-S-d", decScreenSpacing 4)         -- Decrease screen spacing
         , ("M-S-i", incScreenSpacing 4)         -- Increase screen spacing
 
@@ -405,6 +347,7 @@ myKeys =
         , ("M-S-k", windows W.swapUp)     -- Swap focused window with prev window
         , ("M-<Backspace>", promote)      -- Moves focused window to master, others maintain order
         , ("M-S-<Tab>", rotSlavesDown)    -- Rotate all windows except master and keep focus in place
+
         , ("M-C-<Tab>", rotAllDown)       -- Rotate all the windows in the current stack
 
     -- Layouts
@@ -460,7 +403,7 @@ myKeys =
         -- , ("M-u <Space>", spawn "mocp --toggle-pause") 
 
     -- Emacs (CTRL-e followed by a key)
-        -- , ("C-e e", spawn myEmacs)                 -- start emacs
+        -- , ("M-e e", spawn myEmacs)                 -- start emacs
         , ("M-e e", spawn (myEmacs ++ ("--eval '(dashboard-refresh-buffer)'")))   -- emacs dashboard
         , ("M-e b", spawn (myEmacs ++ ("--eval '(ibuffer)'")))   -- list buffers
         , ("M-e d", spawn (myEmacs ++ ("--eval '(dired nil)'"))) -- dired
@@ -469,7 +412,7 @@ myKeys =
         -- , ("M-e n", spawn (myEmacs ++ ("--eval '(elfeed)'")))    -- elfeed rss
         , ("M-e s", spawn (myEmacs ++ ("--eval '(eshell)'")))    -- eshell
         -- , ("M-e t", spawn (myEmacs ++ ("--eval '(mastodon)'")))  -- mastodon.el
-        , ("M-e v", spawn (myEmacs ++ ("--eval '(vterm nil)'")))  -- vterm if on GNU Emacs
+        -- , ("M-e v", spawn (myEmacs ++ ("--eval '(vterm nil)'")))  -- vterm if on GNU Emacs
         -- , ("C-e v", spawn (myEmacs ++ ("--eval '(+vterm/here nil)'"))) -- vterm if on Doom Emacs
         -- , ("M-e w", spawn (myEmacs ++ ("--eval '(eww \"distrotube.com\")'"))) -- eww browser if on GNU Emacsw
         -- , ("C-e w", spawn (myEmacs ++ ("--eval '(doom/window-maximize-buffer(eww \"distrotube.com\"))'"))) -- eww browser if on Doom Emacs
@@ -494,8 +437,10 @@ myKeys =
           where nonNSP          = WSIs (return (\ws -> W.tag ws /= "NSP"))
                 nonEmptyNonNSP  = WSIs (return (\ws -> isJust (W.stack ws) && W.tag ws /= "NSP"))
 
-         
-        
+
+#+end_src
+* Main program loop
+#+begin_src 
 main :: IO ()
 main = do
     -- Launching three instances of xmobar on their monitors.
@@ -539,3 +484,5 @@ main = do
               , ppOrder  = \(ws:l:t:ex) -> [ws,l]++ex++[t]                    -- order of things in xmobar
               }
         } `additionalKeysP` myKeys
+
+#+end_src

@@ -1,0 +1,86 @@
+#+title:BashRC Configuration File
+#+PROPERTY: header-args:shell :tangle ./.bashrc
+* Disable C-s and C-q
+#+begin_src shell
+  stty -ixon
+#+end_src
+* AutoCD
+#+begin_src sh
+  shopt -s autocd 
+#+end_src
+* Infinite history size
+#+begin_src shell
+  HISTSIZE= HISTFILESIZE= 
+#+end_src
+* Boilerplate
+#+begin_src shell 
+
+  [[ $- != *i* ]] && return
+
+#+end_src
+* Default figlet
+This is currently commented out in favour of using colorscript instead
+#+begin_src shell
+
+  #resize -s 29 80
+  #clear
+
+  # figlet moise moiseson
+  # neofetch
+
+#+end_src
+* Aliases
+Here are aliases for different things.
+** ls
+#+begin_src shell
+  alias ls='ls --color=auto --group-directories-first'
+#+end_src
+** emacsclient
+#+begin_src shell
+  alias em='emacsclient -cn'
+#+end_src
+** Pacman
+#+begin_src shell
+  alias p="sudo pacman"
+#+end_src
+** vim
+#+begin_src shell
+  alias v="vim"
+#+end_src
+** mkdir
+#+begin_src shell
+  alias mkd="mkdir -pv"
+#+end_src
+** grep
+#+begin_src shell
+  alias grep="grep --color=auto"
+#+end_src
+** ccat/highlight
+#+begin_src shell
+  alias ccat="highlight --out-format=ansi"
+#+end_src
+** setxkbmap
+#+begin_src shell
+  alias rk="setxkbmap -layout se -option 'ctrl:nocaps'; xcape -e 'Control_L=Escape'"
+#+end_src
+
+* Exports
+#+begin_src shell
+  export EDITOR='emacsclient -c'
+  export VISUAL=$EDITOR
+#+end_src
+* Colorscript
+Runs a random colorscript when opening a new terminal window. Se [[https://gitlab.com/dwt1/shell-color-scripts][here]] for more information.
+#+begin_src shell 
+  colorscript -r
+#+end_src
+
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,18 @@
+#+title: Profile Configuration File
+#+PROPERTY: header-args: :tangle ./test :mkdirp yes
+* Make caps lock extra control key
+#+begin_src  shell :tangle yes
+
+
+  # Only remaps caps as ctrl.
+  # setxkbmap -layout se -option ctrl:nocaps
+
+  #Remaps both ctrl and esc to caps.
+  setxkbmap -layout se -option 'ctrl:nocaps' ; xcape -e 'Control_L=Escape'
+
+#+end_src
+* Start emacs server
+Starts and emacs server instance.
+#+begin_src shell :tangle yes
+emacs --daemon
+#+end_src
