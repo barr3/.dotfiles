@@ -65,8 +65,8 @@ Allows using external packages from ELPA and MELPA
 
   ;; (use-package doom-themes)
   ;; (load-theme 'doom-one t)
-  ;; (setq doom-themes-treemacs-theme "doom-colors")
-  ;; (doom-themes-treemacs-config)
+   (setq doom-themes-treemacs-theme "doom-colors")
+   (doom-themes-treemacs-config)
 
   ;; (use-package doom-modeline
   ;;   :ensure t
@@ -174,9 +174,9 @@ Sets Fira Code as the default font. Could be expanded upon later to added pitch 
     :custom
     (magit-display-buffer-function #'magit-display-buffer-same-window-except-diff-v1))
 
-  (use-package evil-magit
-    :after magit)
-  (use-package forge)
+  ;(use-package evil-magit
+  ;  :after magit)
+  ;(use-package forge)
 
 #+end_src
   
@@ -475,6 +475,7 @@ Adds more helpful help commands.
 
   (use-package evil-collection
     :after evil
+  :custom (evil-collection-company-use-tng nil)
     :config
     (evil-collection-init))
 
@@ -505,19 +506,20 @@ Adds more helpful help commands.
 * LSP
 #+begin_src emacs-lisp
 
+
+
   (defun barremacs/lsp-mode-setup ()
-    (setq lsp-headerline-breadcrumb-segments '(path-up-to-project file symbolds))
+    (setq lsp-headerline-breadcrumb-segments '(path-up-to-project file symbols))
     (lsp-headerline-breadcrumb-mode))
 
-  (use-package lsp-mode 
+  (use-package lsp-mode
     :commands (lsp lsp-deferred)
-    :hook (prog-mode . lsp-mode)
+    :hook (lsp-mode . barremacs/lsp-mode-setup)
     :init
-    (setq lsp-keymap-prefix "C-c l")
+    (setq lsp-keymap-prefix "C-c l")  ;; Or 'C-l', 's-l'
     :config
-    (lsp-enable-which-key-integration t)
-    ;;   (lsp-enable-snippet t)
-    )
+    (lsp-enable-which-key-integration t))
+
 
   (use-package lsp-ui
     :hook (lsp-mode . lsp-ui-mode)
@@ -527,7 +529,35 @@ Adds more helpful help commands.
   (use-package lsp-treemacs
     :after lsp)
 
-  (add-hook 'prog-mode-hook 'lsp-deferred)
+  (use-package lsp-ivy
+    :after lsp)
+
+
+
+
+    ;; (defun barremacs/lsp-mode-setup ()
+    ;;   (setq lsp-headerline-breadcrumb-segments '(path-up-to-project file symbolds))
+    ;;   (lsp-headerline-breadcrumb-mode))
+
+    ;; (use-package lsp-mode 
+    ;;   :commands (lsp lsp-deferred)
+    ;;   :hook (prog-mode . lsp-mode)
+    ;;   :init
+    ;;   (setq lsp-keymap-prefix "C-c l")
+    ;;   :config
+    ;;   (lsp-enable-which-key-integration t)
+    ;;      (lsp-enable-snippet t)
+    ;;   )
+
+    ;; ;;(use-package lsp-ui
+    ;;  :hook (lsp-mode . lsp-ui-mode)
+    ;;  :custom
+    ;;  (lsp-ui-doc-position 'bottom))
+
+    ;;(use-package lsp-treemacs
+    ;;  :after lsp)
+
+    (add-hook 'prog-mode-hook 'lsp-deferred)
 
 
 #+end_src
@@ -535,22 +565,21 @@ Adds more helpful help commands.
 * Company mode
 #+begin_src emacs-lisp
 
+
   (use-package company
     :after lsp-mode
     :hook (lsp-mode . company-mode)
-    (lsp-mode . yas-minor-mode)
-
+    :bind (:map company-active-map
+           ("<tab>" . company-complete-selection))
+          (:map lsp-mode-map
+           ("C-å" . company-indent-or-complete-common))
     :custom
     (company-minimum-prefix-length 1)
     (company-idle-delay 0.0))
 
-  ;;(require 'company-lsp)
-  ;;(push 'company-lsp company-backends)
+  (use-package company-box
+    :hook (company-mode . company-box-mode))
 
-  (with-eval-after-load 'company 
-
-    (define-key company-active-map (kbd "<tab>") 'company-complete-selection)
-    (define-key company-active-map (kbd "TAB") 'company-complete-selection))
 
 #+end_src
 
