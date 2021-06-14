@@ -434,9 +434,11 @@
   :hook (csharp-mode . lsp-deferred))
 
 (use-package treemacs)
-(use-package treemacs-projectile)
+  (use-package treemacs-projectile)
 
-(setq treemacs-width 24)
+  (setq treemacs-width 24)
+
+(use-package treemacs-evil)
 
 (defun toggle-fold ()
   (interactive)

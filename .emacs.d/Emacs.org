@@ -599,7 +599,7 @@ Adds more helpful help commands.
 
   (setq treemacs-width 24)
 
-
+(use-package treemacs-evil)
 
 #+end_src
 * Code folding 
